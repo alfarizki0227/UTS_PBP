@@ -42,6 +42,8 @@ import { DataCuacaLengkap, DataKualitasUdara } from "../../../types/weather";
 
 import { useTema } from "../../context/ThemeContext";
 
+import { simpanRiwayatPencarian } from "../../services/offlineCache";
+
 export default function HalamanUtama() {
   const { warna } = useTema();
 
@@ -209,6 +211,7 @@ export default function HalamanUtama() {
 
     try {
       // Ambil data cuaca dan kualitas udara dari API.
+      await simpanRiwayatPencarian(kota);
       const [dataCuaca, dataAQI] = await Promise.all([
         ambilCuaca(kota.latitude, kota.longitude),
         ambilKualitasUdara(kota.latitude, kota.longitude),

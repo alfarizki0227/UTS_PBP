@@ -226,3 +226,56 @@ export async function hapusCacheKota(
     }
   }
 }
+
+const KUNCI_RIWAYAT_PENCARIAN = "@jelajah_aman:riwayat_pencarian";
+
+// Menyimpan kota yang dipilih dari hasil pencarian.
+// Maksimal 10 kota, tanpa duplikasi koordinat.
+export async function simpanRiwayatPencarian(
+  kota: HasilGeocoding,
+): Promise<void> {
+  const riwayat = await ambilRiwayatPencarian();
+
+  const tanpaDuplikat = riwayat.filter(
+    (item) =>
+      item.latitude !== kota.latitude || item.longitude !== kota.longitude,
+  );
+
+  const riwayatBaru = [kota, ...tanpaDuplikat].slice(0, 10);
+
+  await AsyncStorage.setItem(
+    KUNCI_RIWAYAT_PENCARIAN,
+    JSON.stringify(riwayatBaru),
+  );
+}
+
+// Mengambil riwayat pencarian dari perangkat.
+export async function ambilRiwayatPencarian(): Promise<HasilGeocoding[]> {
+  const json = await AsyncStorage.getItem(KUNCI_RIWAYAT_PENCARIAN);
+
+  if (!json) return [];
+
+  try {
+    const data: unknown = JSON.parse(json);
+    return Array.isArray(data) ? (data as HasilGeocoding[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Menghapus satu kota dari riwayat pencarian.
+export async function hapusRiwayatPencarian(
+  latitude: number,
+  longitude: number,
+): Promise<void> {
+  const riwayat = await ambilRiwayatPencarian();
+
+  const riwayatBaru = riwayat.filter(
+    (item) => item.latitude !== latitude || item.longitude !== longitude,
+  );
+
+  await AsyncStorage.setItem(
+    KUNCI_RIWAYAT_PENCARIAN,
+    JSON.stringify(riwayatBaru),
+  );
+}
